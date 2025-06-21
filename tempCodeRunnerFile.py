@@ -25,7 +25,9 @@ def get_valid_quantity(product_name, price):
             print("❌ Invalid input. Please enter a non-negative whole number.")
         except:
             print("\nExiting...")
-            exit(0)    
+            exit(0)
+        
+
 
 def get_yes_no(prompt):
     while True:
@@ -65,48 +67,38 @@ def get_product_inputs():
 
         return cart
     except KeyboardInterrupt:
-        print("\nExiting...")
+        print("\nProgram interrupted. Exiting...")
         exit(0)
 
 
 def calculate_discount(cart, subtotal, total_quantity):
-    discounts = {}
+    discounts = {
+        'flat_10_discount': FLAT_10_DISCOUNT_AMOUNT if subtotal > FLAT_10_DISCOUNT_THRESHOLD else 0,
+        'bulk_5_discount': sum(
+            item['total'] * BULK_5_DISCOUNT_PERCENT
+            for item in cart.values() if item['quantity'] > BULK_5_DISCOUNT_THRESHOLD
+        ),
+        'bulk_10_discount': subtotal * BULK_10_DISCOUNT_PERCENT if total_quantity > BULK_10_DISCOUNT_THRESHOLD else 0,
+        'tiered_50_discount': 0
+    }
 
-    # flat 10 Discount
-    if subtotal > FLAT_10_DISCOUNT_THRESHOLD:
-        discounts['flat_10_discount'] = FLAT_10_DISCOUNT_AMOUNT
-    else:
-        discounts['flat_10_discount'] = 0
-
-    # bulk 5 Discount
-    bulk_5_discount = 0
-    for item in cart.values():
-        if item['quantity'] > BULK_5_DISCOUNT_THRESHOLD:
-            bulk_5_discount += item['total'] * BULK_5_DISCOUNT_PERCENT
-    discounts['bulk_5_discount'] = bulk_5_discount
-
-    # bulk 10 Discount
-    if total_quantity > BULK_10_DISCOUNT_THRESHOLD:
-        discounts['bulk_10_discount'] = subtotal * BULK_10_DISCOUNT_PERCENT
-    else:
-        discounts['bulk_10_discount'] = 0
-
-    # tiered 50 Discount
-    tiered_50_discount = 0
     if total_quantity > TIERED_50_DISCOUNT_TOTAL_THRESHOLD:
         for item in cart.values():
             if item['quantity'] > TIERED_50_DISCOUNT_PRODUCT_THRESHOLD:
-                extra_units = item['quantity'] - TIERED_50_DISCOUNT_PRODUCT_THRESHOLD
-                tiered_50_discount += extra_units * item['price'] * TIERED_50_DISCOUNT_PERCENT
-    discounts['tiered_50_discount'] = tiered_50_discount
+                discounts['tiered_50_discount'] += (
+                    item['price'] *
+                    (item['quantity'] - TIERED_50_DISCOUNT_PRODUCT_THRESHOLD) *
+                    TIERED_50_DISCOUNT_PERCENT
+                )
 
-    # best discount
-    discount_name, discount_amount = max(discounts.items(), key=lambda x: x[1])
+    best_discount = max(discounts.items(), key=lambda x: x[1])
+    discount_name, discount_amount = best_discount
 
     if discount_amount == 0:
         discount_name = "No discount"
 
     return discount_name, discount_amount
+
 
 
 def display_order_summary(cart, subtotal, discount_name, discount_amount, total):
@@ -117,7 +109,6 @@ def display_order_summary(cart, subtotal, discount_name, discount_amount, total)
     print(f"\nSubtotal: ${subtotal:.2f}")
     print(f"Discount Applied: {discount_name} - ${discount_amount:.2f}")
     print(f"Total: ${total:.2f}")
-
 
 def main():
     cart = get_product_inputs()
@@ -133,6 +124,7 @@ def main():
     total = subtotal - discount_amount
 
     display_order_summary(cart, subtotal, discount_name, discount_amount, total)
+
 
 
 if __name__ == "__main__":
