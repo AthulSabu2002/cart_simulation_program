@@ -120,6 +120,13 @@ def display_order_summary(cart, subtotal, discount_name, discount_amount, total)
 
 
 def main():
+    print("\n===== AVAILABLE DISCOUNTS =====")
+    print(f"1. flat_10_discount: ${FLAT_10_DISCOUNT_AMOUNT} off when total exceeds ${FLAT_10_DISCOUNT_THRESHOLD}")
+    print(f"2. bulk_5_discount: {BULK_5_DISCOUNT_PERCENT*100}% off on products with quantity exceeding {BULK_5_DISCOUNT_THRESHOLD} units")
+    print(f"3. bulk_10_discount: {BULK_10_DISCOUNT_PERCENT*100}% off when total quantity exceeds {BULK_10_DISCOUNT_THRESHOLD} units")
+    print(f"4. tiered_50_discount: {TIERED_50_DISCOUNT_PERCENT*100}% off on units exceeding {TIERED_50_DISCOUNT_PRODUCT_THRESHOLD} of any product, when total quantity exceeds {TIERED_50_DISCOUNT_TOTAL_THRESHOLD}")
+    print("\nNote: The best discount will be automatically applied.\n")
+    
     cart = get_product_inputs()
 
     subtotal = sum(item['total'] for item in cart.values())
